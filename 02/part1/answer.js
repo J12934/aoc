@@ -1,0 +1,57 @@
+import { readFile } from "node:fs/promises";
+
+const states = {
+  "rock vs paper": "loss",
+  "rock vs rock": "draw",
+  "rock vs scissor": "win",
+
+  "paper vs paper": "draw",
+  "paper vs rock": "win",
+  "paper vs scissor": "loss",
+
+  "scissor vs paper": "win",
+  "scissor vs rock": "loss",
+  "scissor vs scissor": "draw",
+};
+
+const bonusPoints = {
+  paper: 2,
+  rock: 1,
+  scissor: 3,
+};
+
+const winPoints = {
+  win: 6,
+  draw: 3,
+  loss: 0,
+};
+
+/**
+ *
+ * @param {string} fileContent
+ */
+export function calc(fileContent) {
+  return fileContent
+    .replaceAll(/(A|X)/g, "rock")
+    .replaceAll(/(B|Y)/g, "paper")
+    .replaceAll(/C|Z/g, "scissor")
+    .split("\n")
+    .filter(Boolean)
+    .map((gameString) => gameString.split(" "))
+    .map(([elf, me]) => ({
+      state: states[`${me} vs ${elf}`],
+      bonusPoints: bonusPoints[me],
+    }))
+    .reduce(
+      (sum, { state, bonusPoints }) => sum + (winPoints[state] + bonusPoints),
+      0
+    );
+}
+
+export async function run() {
+  const fileContent = await readFile(process.argv[process.argv.length - 1], {
+    encoding: "utf-8",
+  });
+  const result = calc(fileContent);
+  console.log(result);
+}
